@@ -1,0 +1,22 @@
+{
+  "entities": {
+    "Feedback": {
+      "title": "Feedback",
+      "description": "User feedback on agent conversation responses",
+      "type": "object",
+      "properties": {
+        "messageId": { "type": "string" },
+        "feedback": { "type": "string", "enum": ["up", "down"] },
+        "timestamp": { "type": "number" },
+        "userId": { "type": "string" }
+      },
+      "required": ["messageId", "feedback", "timestamp", "userId"]
+    }
+  },
+  "firestore": {
+    "/feedback/{feedbackId}": {
+      "schema": { "$ref": "#/entities/Feedback" },
+      "description": "Global collection for user feedback"
+    }
+  }
+}

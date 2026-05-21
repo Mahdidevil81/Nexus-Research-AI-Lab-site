@@ -22,6 +22,7 @@ export interface Project {
   description: string;
   stats: { label: string; value: string }[];
   accentColor: string;
+  imageUrl?: string;
 }
 
 export interface BalanceItem {
@@ -164,7 +165,8 @@ export const PROJECTS: Project[] = [
       { label: "Contextual Gain", value: "35%" },
       { label: "Frequency Harmony", value: "369 Hz" }
     ],
-    accentColor: "#DFBA44"
+    accentColor: "#DFBA44",
+    imageUrl: "https://images.unsplash.com/photo-1507668077129-56e32842fceb?auto=format&fit=crop&w=420&q=80"
   },
   {
     id: "anti-censorship",
@@ -176,7 +178,8 @@ export const PROJECTS: Project[] = [
       { label: "Bypass Methods", value: "Multi-layer" },
       { label: "Target Audience", value: "Sovereign Users" }
     ],
-    accentColor: "#DFBA44"
+    accentColor: "#DFBA44",
+    imageUrl: "https://images.unsplash.com/photo-1526374965328-7f61d4dc18c5?auto=format&fit=crop&w=420&q=80"
   },
   {
     id: "manifesto-nexus",
@@ -188,7 +191,8 @@ export const PROJECTS: Project[] = [
       { label: "EC Register ID", value: "SEP-211326027" },
       { label: "Funding Budget", value: "€500,000" }
     ],
-    accentColor: "#C59B27"
+    accentColor: "#C59B27",
+    imageUrl: "https://images.unsplash.com/photo-1451187580459-43490279c0fa?auto=format&fit=crop&w=420&q=80"
   },
   {
     id: "farm2fork-nodes",
@@ -200,7 +204,8 @@ export const PROJECTS: Project[] = [
       { label: "Waste Reduction", value: "-20%" },
       { label: "Budget Scope", value: "€2M" }
     ],
-    accentColor: "#D4AF37"
+    accentColor: "#D4AF37",
+    imageUrl: "https://images.unsplash.com/photo-1530836369250-ef72a3f5cda8?auto=format&fit=crop&w=420&q=80"
   },
   {
     id: "human-survival-book",
@@ -212,7 +217,8 @@ export const PROJECTS: Project[] = [
       { label: "Designation", value: "AUTHOR" },
       { label: "Core Key", value: "Awareness" }
     ],
-    accentColor: "#DFBA44"
+    accentColor: "#DFBA44",
+    imageUrl: "https://images.unsplash.com/photo-1544947950-fa07a98d237f?auto=format&fit=crop&w=420&q=80"
   },
   {
     id: "aware-protocol-agntcon",
@@ -224,6 +230,7 @@ export const PROJECTS: Project[] = [
       { label: "Presentation", value: "Sept 17-18" },
       { label: "Location", value: "Europe / Online" }
     ],
-    accentColor: "#C59B27"
+    accentColor: "#C59B27",
+    imageUrl: "https://images.unsplash.com/photo-1618005182384-a83a8bd57fbe?auto=format&fit=crop&w=420&q=80"
   }
 ];

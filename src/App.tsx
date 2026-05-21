@@ -42,6 +42,8 @@ import StabilityMatrixCard from "./components/StabilityMatrixCard";
 import AuditedLedgerCard from "./components/AuditedLedgerCard";
 import GlobalSearchBar from "./components/GlobalSearchBar";
 import ExpertCVCard from "./components/ExpertCVCard";
+import PartnersMegaMenu from "./components/PartnersMegaMenu";
+import PartnersGridCard from "./components/PartnersGridCard";
 
 export default function App() {
   const [showLoadingScreen, setShowLoadingScreen] = useState(true);
@@ -60,13 +62,20 @@ export default function App() {
   const [activeManifestoTab, setActiveManifestoTab] = useState<number>(0);
   const [customCapitalAmount, setCustomCapitalAmount] = useState<number>(5000);
   
+  // Custom video url state allowing users to dynamic update active video presentation
+  const [videoUrl, setVideoUrl] = useState<string>(() => {
+    return localStorage.getItem('nexus_intro_video_url') || 'https://www.youtube.com/embed/Y-9f93mU5G4';
+  });
+  const [isEditingVideo, setIsEditingVideo] = useState<boolean>(false);
+  const [videoUrlInput, setVideoUrlInput] = useState<string>('');
+
   // Multilingual & screenshot-align states
   const [language, setLanguage] = useState<'fa' | 'en'>('fa');
   const [showTopBar, setShowTopBar] = useState<boolean>(true);
   const [activeNav, setActiveNav] = useState<string>('home');
   
   // Interactive Chat State
-  const [messages, setMessages] = useState<Array<{ id: string; role: 'user' | 'assistant'; text: string; timestamp: string }>>([
+  const [messages, setMessages] = useState<Array<{ id: string; role: 'user' | 'assistant'; text: string; timestamp: string; feedback?: 'up' | 'down' }>>([
     {
       id: "initial",
       role: 'assistant',
@@ -78,6 +87,31 @@ export default function App() {
   const [isChatLoading, setIsChatLoading] = useState(false);
   const [quotaExhausted, setQuotaExhausted] = useState(false);
   const chatEndRef = useRef<HTMLDivElement>(null);
+
+  const handleFeedback = async (id: string, feedback: 'up' | 'down') => {
+    setMessages(prev => prev.map(m => m.id === id ? { ...m, feedback } : m));
+    
+    // Save to Firestore
+    try {
+      const { doc, setDoc } = await import('firebase/firestore');
+      const { db, OperationType, handleFirestoreError } = await import('./lib/auth');
+      const { getAuth } = await import('firebase/auth');
+      
+      const auth = getAuth();
+      if (!auth.currentUser) return; // Only signed-in users can leave feedback
+      
+      const feedbackPath = `feedback/${id}_${auth.currentUser.uid}`;
+      await setDoc(doc(db, 'feedback', `${id}_${auth.currentUser.uid}`), {
+        messageId: id,
+        feedback,
+        timestamp: Date.now(),
+        userId: auth.currentUser.uid
+      });
+    } catch (error) {
+       // Using dynamic import inside catch fails typescript scoping easily, we will just log error or use handleFirestoreError if we can
+       console.error("Failed to save feedback to firestore", error);
+    }
+  };
 
   // 3-6-9 Solfeggio Audio State
   const [activeFreq, setActiveFreq] = useState<number>(369);
@@ -493,6 +527,20 @@ export default function App() {
               { id: 'contact', labelFa: 'تماس', labelEn: 'Contact' }
             ].map((item) => {
               const isActive = activeNav === item.id;
+              if (item.id === 'partners') {
+                return (
+                  <PartnersMegaMenu 
+                    key={item.id} 
+                    language={language} 
+                    isDevilMode={isDevilMode} 
+                    label={language === 'fa' ? item.labelFa : item.labelEn}
+                    isActive={isActive}
+                    onClick={() => {
+                      setActiveNav(item.id);
+                    }}
+                  />
+                );
+              }
               return (
                 <button
                   key={item.id}
@@ -506,7 +554,7 @@ export default function App() {
                   }}
                   className={`px-3.5 py-1.5 rounded-xl font-medium text-xs md:text-sm transition-all duration-300 pointer-events-auto cursor-pointer flex-shrink-0 ${
                     isActive 
-                      ? (isDevilMode ? 'bg-red-950/60 text-red-00 border border-red-850/40 font-bold' : 'bg-[#DFBA44]/15 text-[#DFBA44] border border-[#DFBA44]/30 font-bold') 
+                      ? (isDevilMode ? 'bg-red-950/60 text-red-100 border border-red-850/40 font-bold' : 'bg-[#DFBA44]/15 text-[#DFBA44] border border-[#DFBA44]/30 font-bold') 
                       : 'text-neutral-400 hover:text-white hover:bg-white/5'
                   }`}
                 >
@@ -646,8 +694,38 @@ export default function App() {
             </div>
 
             {/* Right side DevilLogo column */}
-            <div className="lg:col-span-4 flex justify-center">
+            <div className="lg:col-span-4 flex flex-col items-center justify-center gap-6">
               <DevilLogo isDevilMode={isDevilMode} onToggleMode={() => setIsDevilMode(!isDevilMode)} />
+              
+              {/* Premium Lazy-loaded Hero Visual Gateway */}
+              <div className={`w-full max-w-[280px] rounded-xl border p-2 relative overflow-hidden group transition-all duration-500 bg-black/40 ${
+                isDevilMode 
+                  ? "border-red-900/40 shadow-[0_0_15px_rgba(239,68,68,0.1)] hover:border-red-500/50" 
+                  : "border-[#DFBA44]/30 shadow-[0_0_15px_rgba(223,186,68,0.1)] hover:border-[#DFBA44]/50"
+              }`}>
+                {/* Glow Overlay */}
+                <div className="absolute inset-0 bg-gradient-to-t from-black via-transparent to-transparent opacity-60 z-10" />
+                
+                {/* Lazy-loaded Visual Banner Image */}
+                <img 
+                  src="https://images.unsplash.com/photo-1451187580459-43490279c0fa?auto=format&fit=crop&w=600&q=80" 
+                  alt="Nexus Aware Core Gateway"
+                  loading="lazy"
+                  referrerPolicy="no-referrer"
+                  className="w-full h-[180px] object-cover rounded-lg group-hover:scale-110 transition-transform duration-700 ease-out"
+                />
+
+                <div className="absolute bottom-3 left-3 right-3 z-20 text-left font-mono text-[9px]">
+                  <span className={`px-1.5 py-0.5 rounded text-[8px] border bg-black font-bold uppercase ${
+                    isDevilMode ? "text-red-400 border-red-500/30 font-black" : "text-[#DFBA44] border-[#DFBA44]/30 font-black"
+                  }`}>
+                    {language === 'fa' ? 'کانال ارتباطی نکسوس' : 'NEXUS COGNITIVE CORE'}
+                  </span>
+                  <p className="text-neutral-300 mt-1.5 drop-shadow-md">
+                    {language === 'fa' ? 'راه‌اندازی فرکانس دروازه آگاهی ۳۶۹' : 'Synchronizing Portal Matrix...'}
+                  </p>
+                </div>
+              </div>
             </div>
           </div>
         </div>
@@ -680,6 +758,7 @@ export default function App() {
           quotaExhausted={quotaExhausted}
           handleSendMessage={handleSendMessage}
           chatEndRef={chatEndRef}
+          handleFeedback={handleFeedback}
         />
 
         {/* Card 3: Experience Registry Chronicles & Projects dual view */}
@@ -727,6 +806,12 @@ export default function App() {
           isDevilMode={isDevilMode}
         />
 
+        {/* Card 8: Integrated Strategic Partners Grid */}
+        <PartnersGridCard
+          language={language}
+          isDevilMode={isDevilMode}
+        />
+
       </div>
 
       {/* Main presentation module */}
@@ -742,16 +827,76 @@ export default function App() {
               <span className={`text-[10px] font-mono tracking-widest uppercase block ${isDevilMode ? "text-red-500" : "text-[#C59B27]"}`}>
                 {language === 'fa' ? 'فیلم معرفی دستاوردهای هوشمند نکسوس ۳۶۹' : 'NEXUS 369 INTEGRATED PRESENTATION FEED'}
               </span>
-              <h3 className="text-xl md:text-2xl font-black text-white uppercase tracking-tight">
-                {language === 'fa' ? 'ویدئوی معرفی ویدئویی بایگانی و هوش NEXUS 369' : 'NEXUS 369 ARCHIVE INTRODUCTORY VIDEO'}
-              </h3>
+              <div className="flex items-center justify-center gap-2">
+                <h3 className="text-xl md:text-2xl font-black text-white uppercase tracking-tight">
+                  {language === 'fa' ? 'ویدئوی معرفی ویدئویی بایگانی و هوش NEXUS 369' : 'NEXUS 369 ARCHIVE INTRODUCTORY VIDEO'}
+                </h3>
+                <button 
+                  onClick={() => {
+                    setIsEditingVideo(!isEditingVideo);
+                    setVideoUrlInput(videoUrl);
+                  }}
+                  className={`p-1 px-2 rounded-md transition-colors text-[10px] font-mono border cursor-pointer ${
+                    isDevilMode 
+                      ? 'border-red-500/20 text-red-400 hover:bg-red-500/10' 
+                      : 'border-[#DFBA44]/25 text-[#DFBA44] hover:bg-[#DFBA44]/10'
+                  }`}
+                  title="Edit Source Video"
+                >
+                  {isEditingVideo ? '✕ CLOSE' : '✎ EDIT VIDEO SOURCE'}
+                </button>
+              </div>
             </div>
+
+            {isEditingVideo && (
+              <div className={`w-full max-w-xl p-4 rounded-xl text-left font-mono text-xs space-y-3 select-text border ${
+                isDevilMode ? 'bg-red-950/20 border-red-500/20 text-red-200' : 'bg-[#dfba44]/5 border-[#dfba44]/20 text-[#DFBA44]'
+              }`}>
+                <p className="text-neutral-300">
+                  {language === 'fa' 
+                    ? 'نشانی کامل ویدئو (مانند یوتیوب، آپارات یا لینک مستقیم mp4) را وارد کنید:' 
+                    : 'Enter the complete video embed URL (YouTube, Aparat or direct mp4/webm link):'}
+                </p>
+                <div className="flex gap-2">
+                  <input
+                    type="text"
+                    value={videoUrlInput}
+                    onChange={(e) => setVideoUrlInput(e.target.value)}
+                    placeholder="https://www.youtube.com/embed/Y-9f93mU5G4"
+                    className="flex-1 bg-black border border-neutral-700 rounded p-2 text-white outline-none focus:border-amber-400 select-all"
+                  />
+                  <button
+                    onClick={() => {
+                      if (videoUrlInput.trim()) {
+                        let parsed = videoUrlInput.trim();
+                        // Check if it's a standard youtube watch URL and convert to embed automatically
+                        if (parsed.includes('youtube.com/watch?v=')) {
+                          const id = parsed.split('v=')[1]?.split('&')[0];
+                          if (id) parsed = `https://www.youtube.com/embed/${id}`;
+                        } else if (parsed.includes('youtu.be/')) {
+                          const id = parsed.split('youtu.be/')[1]?.split('?')[0];
+                          if (id) parsed = `https://www.youtube.com/embed/${id}`;
+                        }
+                        setVideoUrl(parsed);
+                        localStorage.setItem('nexus_intro_video_url', parsed);
+                        setIsEditingVideo(false);
+                      }
+                    }}
+                    className={`px-4 py-2 font-bold rounded cursor-pointer transition-colors ${
+                      isDevilMode ? 'bg-red-600 hover:bg-red-750 text-white' : 'bg-[#DFBA44] hover:bg-[#c59b27] text-black'
+                    }`}
+                  >
+                    {language === 'fa' ? 'ذخیره' : 'Save'}
+                  </button>
+                </div>
+              </div>
+            )}
 
             {/* Video Player Box resembling the screenshot player exactly */}
             <div className="w-full max-w-4xl aspect-video rounded-xl bg-black overflow-hidden border border-neutral-800 shadow-2xl relative">
               <iframe 
                 className="w-full h-full object-cover pointer-events-auto"
-                src="https://www.youtube.com/embed/Y-9f93mU5G4" 
+                src={videoUrl} 
                 title="Nexus 369 Archive Introductory Video" 
                 frameBorder="0" 
                 allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share" 

@@ -122,10 +122,13 @@ app.post("/api/nexus-chat", async (req, res) => {
       });
       replyText = response.text || "";
     } catch (apiError: any) {
-      console.warn("API Error (Falling back to offline system simulation):", apiError.message);
       const errStr = String(apiError.message || "") + " " + JSON.stringify(apiError);
+      
       if (errStr.includes("prepayment") || errStr.includes("depleted") || errStr.includes("RESOURCE_EXHAUSTED") || errStr.includes("429")) {
+        console.warn("API Error: Your Gemini API Key has run out of credits (429 RESOURCE EXHAUSTED). Falling back to offline simulator.");
         quotaExhausted = true;
+      } else {
+        console.warn("API Error (Falling back to offline system simulation):", apiError.message);
       }
       
       // Highly contextual offline response engine tailored to Mahdi Farahi's portfolio if key is not active
@@ -177,6 +180,55 @@ app.post("/api/nexus-chat", async (req, res) => {
   } catch (error: any) {
     console.error("Critical server handler error:", error);
     res.status(500).json({ error: "System failed parsing context. Please verify status logs." });
+  }
+});
+
+// Route for AI-powered Search
+app.post("/api/ai-search", async (req, res) => {
+  try {
+    const { query, language, portfolioData } = req.body;
+    if (!query) {
+      return res.status(400).json({ error: "No search query provided." });
+    }
+
+    let summaryText = "";
+    try {
+      const ai = getGeminiClient();
+      const prompt = `
+You are an AI assistant directly integrated into Mahdi Farahi's portfolio search bar.
+The user is searching for: "${query}"
+The current language of the UI is ${language === 'fa' ? 'Persian (Farsi)' : 'English'}. Respond strictly in this language.
+Here is a JSON representation of the currently available portfolio data:
+${JSON.stringify(portfolioData)}
+
+Task: Identify the parts of Mahdi Farahi's portfolio data (Projects, Experiences, and Manifesto sections) that are highly relevant to the search query, and provide a short, professional, and elegant summary of this specific data.
+If nothing matches, politely inform them. Keep the output very concise, scannable, using bullet points for matches. Emphasize Mahdi Farahi's expertise and value.
+      `;
+
+      const response = await ai.models.generateContent({
+        model: "gemini-3.5-flash",
+        contents: prompt,
+        config: {
+          temperature: 0.7,
+        }
+      });
+      summaryText = response.text || "";
+    } catch (apiError: any) {
+      const errStr = String(apiError.message || "") + " " + JSON.stringify(apiError);
+      if (errStr.includes("prepayment") || errStr.includes("depleted") || errStr.includes("RESOURCE_EXHAUSTED") || errStr.includes("429")) {
+        console.warn("AI Search API Error: Gemini API Key out of credits (429).");
+      } else {
+        console.warn("AI Search API Error (Falling back to offline msg):", apiError.message);
+      }
+      summaryText = language === 'fa' 
+        ? "سیستم جستجوی هوشمند در حال حاضر به دلیل عدم دسترسی به API Key در حالت آفلاین است. لطفا کلید را وارد کنید."
+        : "AI Search is currently offline due to missing API Key. Please provide it in settings.";
+    }
+
+    res.json({ summary: summaryText });
+  } catch (error: any) {
+    console.error("AI search server error:", error);
+    res.status(500).json({ error: "Search failed." });
   }
 });
 

@@ -1,11 +1,12 @@
 import React from "react";
-import { MessageSquare, RefreshCw, Send } from "lucide-react";
+import { MessageSquare, RefreshCw, Send, ThumbsUp, ThumbsDown } from "lucide-react";
 
 interface Message {
   id: string;
   role: 'user' | 'assistant';
   text: string;
   timestamp: string;
+  feedback?: 'up' | 'down';
 }
 
 interface GeminiChatCardProps {
@@ -18,6 +19,7 @@ interface GeminiChatCardProps {
   quotaExhausted: boolean;
   handleSendMessage: (e?: React.FormEvent, customText?: string) => void;
   chatEndRef: React.RefObject<HTMLDivElement | null>;
+  handleFeedback?: (id: string, feedback: 'up' | 'down') => void;
 }
 
 export default function GeminiChatCard({
@@ -29,7 +31,8 @@ export default function GeminiChatCard({
   isChatLoading,
   quotaExhausted,
   handleSendMessage,
-  chatEndRef
+  chatEndRef,
+  handleFeedback
 }: GeminiChatCardProps) {
   return (
     <section 
@@ -77,7 +80,37 @@ export default function GeminiChatCard({
               }`}>
                 <p className="whitespace-pre-line text-xs font-light">{msg.text}</p>
               </div>
-              <span className="text-[8.5px] font-mono text-neutral-500 mt-0.5 px-0.5">{msg.timestamp}</span>
+              <div className="flex items-center gap-2 mt-0.5 px-0.5">
+                <span className="text-[8.5px] font-mono text-neutral-500">{msg.timestamp}</span>
+                {msg.role === 'assistant' && handleFeedback && (
+                  <div className="flex items-center gap-1.5 opacity-60">
+                    <button
+                      type="button"
+                      onClick={() => handleFeedback(msg.id, 'up')}
+                      className={`hover:opacity-100 transition-opacity cursor-pointer ${
+                        msg.feedback === 'up' 
+                          ? (isDevilMode ? 'text-red-500' : 'text-[#DFBA44]') 
+                          : 'text-neutral-500'
+                      }`}
+                      title={language === 'fa' ? 'مفید بود' : 'Helpful'}
+                    >
+                      <ThumbsUp className="w-3 h-3" />
+                    </button>
+                    <button
+                      type="button"
+                      onClick={() => handleFeedback(msg.id, 'down')}
+                      className={`hover:opacity-100 transition-opacity cursor-pointer ${
+                        msg.feedback === 'down' 
+                          ? (isDevilMode ? 'text-red-500' : 'text-[#DFBA44]') 
+                          : 'text-neutral-500'
+                      }`}
+                      title={language === 'fa' ? 'مفید نبود' : 'Not helpful'}
+                    >
+                      <ThumbsDown className="w-3 h-3" />
+                    </button>
+                  </div>
+                )}
+              </div>
             </div>
           ))}
           
@@ -121,7 +154,16 @@ export default function GeminiChatCard({
         <input 
           type="text"
           value={inputText}
-          onChange={(e) => setInputText(e.target.value)}
+          onChange={(e) => {
+            let val = e.target.value;
+            // Prevent leading whitespace
+            if (val.startsWith(' ')) {
+              val = val.trimStart();
+            }
+            // Prevent excessive whitespace (more than one consecutive space)
+            val = val.replace(/\s{2,}/g, ' ');
+            setInputText(val);
+          }}
           placeholder={language === 'fa' ? 'در مورد سوابق هوش مصنوعی، مانیفست بقا یا کدهای اعتباری اروپا بنویسید...' : 'Ask about European Union PIC, Horizon Europe budget or AWARE protocol...'}
           className={`flex-1 bg-[#121214] border rounded-xl px-3 py-2 text-xs text-white placeholder-neutral-500 focus:outline-none transition-colors ${
             isDevilMode ? "border-red-900/40 focus:border-red-500" : "border-[#DFBA44]/25 focus:border-[#DFBA44]"

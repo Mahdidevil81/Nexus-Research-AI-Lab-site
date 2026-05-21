@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from "react";
-import { Database, ChevronRight, Edit2, Check, X } from "lucide-react";
+import { Database, ChevronRight, Edit2, Check, X, Box as BoxIcon } from "lucide-react";
+import Project3DViewer from "./Project3DViewer";
 
 interface Experience {
   role: string;
@@ -18,6 +19,7 @@ interface Project {
   description: string;
   stats: { label: string; value: string }[];
   accentColor: string;
+  imageUrl?: string;
 }
 
 interface ExperienceChronicleCardProps {
@@ -45,10 +47,12 @@ export default function ExperienceChronicleCard({
 }: ExperienceChronicleCardProps) {
   const [isEditing, setIsEditing] = useState(false);
   const [editDesc, setEditDesc] = useState("");
+  const [show3DModel, setShow3DModel] = useState(false);
 
   useEffect(() => {
     setEditDesc(selectedProject.description);
     setIsEditing(false); // Reset editing mode when project changes
+    setShow3DModel(false);
   }, [selectedProject]);
 
   return (
@@ -175,18 +179,31 @@ export default function ExperienceChronicleCard({
                 </span>
                 <h4 className="text-sm font-black text-white uppercase mt-0.5 leading-snug flex items-center justify-between">
                   <span>{selectedProject.title}</span>
-                  {!isEditing && onProjectUpdate && (
+                  <div className="flex items-center gap-1">
                     <button 
-                      onClick={() => setIsEditing(true)} 
-                      className="text-neutral-500 hover:text-white transition-colors cursor-pointer p-1 rounded-md"
+                      onClick={() => setShow3DModel(!show3DModel)} 
+                      className={`text-neutral-500 hover:text-white transition-colors cursor-pointer p-1 rounded-md ${show3DModel ? (isDevilMode ? 'text-red-400 bg-red-950/40' : 'text-[#DFBA44] bg-[#DFBA44]/20') : ''}`}
+                      title={language === 'fa' ? 'مدل 3 بعدی' : 'View 3D Model'}
                     >
-                      <Edit2 className="w-3.5 h-3.5" />
+                      <BoxIcon className="w-3.5 h-3.5" />
                     </button>
-                  )}
+                    {!isEditing && onProjectUpdate && (
+                      <button 
+                        onClick={() => setIsEditing(true)} 
+                        className="text-neutral-500 hover:text-white transition-colors cursor-pointer p-1 rounded-md"
+                      >
+                        <Edit2 className="w-3.5 h-3.5" />
+                      </button>
+                    )}
+                  </div>
                 </h4>
               </div>
 
-              {isEditing ? (
+              {show3DModel ? (
+                <div className="h-[120px] w-full">
+                   <Project3DViewer projectId={selectedProject.id} isDevilMode={isDevilMode} />
+                </div>
+              ) : isEditing ? (
                 <div className="space-y-2">
                   <textarea 
                     value={editDesc}
@@ -223,9 +240,22 @@ export default function ExperienceChronicleCard({
                   </div>
                 </div>
               ) : (
-                <p className="text-[11px] text-[#D7D2C4]/90 leading-relaxed font-light">
-                  {selectedProject.description}
-                </p>
+                <div className="flex gap-4 items-start">
+                  {selectedProject.imageUrl && (
+                    <div className="w-[80px] h-[80px] md:w-[90px] md:h-[90px] shrink-0 rounded-xl overflow-hidden border border-white/15 relative group bg-black/60 shadow-lg select-none">
+                      <img 
+                        src={selectedProject.imageUrl} 
+                        alt={selectedProject.title}
+                        loading="lazy"
+                        referrerPolicy="no-referrer"
+                        className="w-full h-full object-cover transition-all duration-700 group-hover:scale-110 opacity-90 group-hover:opacity-100"
+                      />
+                    </div>
+                  )}
+                  <p className="text-[11px] text-[#D7D2C4]/90 leading-relaxed font-light flex-1">
+                    {selectedProject.description}
+                  </p>
+                </div>
               )}
 
               {/* Project stats row */}

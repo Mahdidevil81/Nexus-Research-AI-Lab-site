@@ -1,5 +1,6 @@
 import React, { useState, useEffect, useRef } from "react";
-import { Search, X, ChevronRight } from "lucide-react";
+import { Search, X, ChevronRight, Sparkles, Loader2 } from "lucide-react";
+import Markdown from "react-markdown";
 import { Project, Experience, MANIFESTO_SECTIONS } from "../types";
 
 interface SearchResult {
@@ -31,7 +32,10 @@ export default function GlobalSearchBar({
   const [query, setQuery] = useState("");
   const [isOpen, setIsOpen] = useState(false);
   const [results, setResults] = useState<SearchResult[]>([]);
+  const [aiSummary, setAiSummary] = useState<string>("");
+  const [isAiLoading, setIsAiLoading] = useState(false);
   const searchRef = useRef<HTMLDivElement>(null);
+  const aiDebounceRef = useRef<NodeJS.Timeout | null>(null);
 
   useEffect(() => {
     const handleClickOutside = (event: MouseEvent) => {
@@ -43,9 +47,40 @@ export default function GlobalSearchBar({
     return () => document.removeEventListener("mousedown", handleClickOutside);
   }, []);
 
+  const fetchAiSummary = async (searchQuery: string) => {
+    setIsAiLoading(true);
+    setAiSummary("");
+    try {
+      const response = await fetch("/api/ai-search", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({
+          query: searchQuery,
+          language,
+          portfolioData: { projects, experiences, manifesto: MANIFESTO_SECTIONS }
+        }),
+      });
+      const data = await response.json();
+      if (data.summary) {
+        setAiSummary(data.summary);
+      }
+    } catch (e) {
+      console.error(e);
+      setAiSummary(language === 'fa' ? 'خطا در دریافت اطلاعات هوش مصنوعی.' : 'Failed to fetch AI summary.');
+    } finally {
+      setIsAiLoading(false);
+    }
+  };
+
   useEffect(() => {
     if (!query.trim()) {
       setResults([]);
+      setAiSummary("");
+      if (aiDebounceRef.current) {
+        clearTimeout(aiDebounceRef.current);
+      }
       return;
     }
 
@@ -89,7 +124,18 @@ export default function GlobalSearchBar({
     });
 
     setResults(newResults);
-  }, [query, projects, experiences]);
+
+    // AI Debounce Logic
+    if (aiDebounceRef.current) {
+      clearTimeout(aiDebounceRef.current);
+    }
+    aiDebounceRef.current = setTimeout(() => {
+      if (query.trim().length > 2) {
+         fetchAiSummary(query.trim());
+      }
+    }, 600); // 600ms debounce
+
+  }, [query, projects, experiences, language]);
 
   const handleSelect = (result: SearchResult) => {
     setIsOpen(false);
@@ -138,13 +184,44 @@ export default function GlobalSearchBar({
       </div>
 
       {isOpen && query.trim() && (
-        <div className={`absolute top-full mt-2 w-full md:w-[350px] ${language === 'fa' ? 'left-0' : 'right-0'} rounded-xl border p-2 shadow-2xl max-h-80 overflow-y-auto overflow-x-hidden ${
+        <div className={`absolute top-full mt-2 w-full md:w-[400px] ${language === 'fa' ? 'left-0' : 'right-0'} rounded-xl border p-2 shadow-2xl max-h-[80vh] overflow-y-auto overflow-x-hidden ${
           isDevilMode 
             ? "bg-[#110B0B] border-red-900/40 shadow-red-900/20" 
             : "bg-[#090D11] border-[#DFBA44]/30 shadow-[#DFBA44]/10"
         }`}>
+          {/* AI OVERVIEW START */}
+          {(isAiLoading || aiSummary) && (
+            <div className={`mb-3 p-3 rounded-lg border ${
+              isDevilMode ? 'bg-[#150F0F] border-red-500/20' : 'bg-[#121019] border-[#DFBA44]/20'
+            }`}>
+              <div className="flex items-center gap-2 mb-2">
+                <Sparkles className={`w-3.5 h-3.5 ${isDevilMode ? 'text-red-500' : 'text-[#DFBA44]'}`} />
+                <span className={`text-xs font-semibold uppercase tracking-wider ${isDevilMode ? 'text-red-400' : 'text-[#DFBA44]'}`}>
+                  {language === 'fa' ? 'چکیده هوش مصنوعی' : 'AI Summary'}
+                </span>
+                {isAiLoading && (
+                  <Loader2 className={`w-3 h-3 animate-spin ml-auto ${isDevilMode ? 'text-red-500' : 'text-[#DFBA44]'}`} />
+                )}
+              </div>
+              
+              <div className="text-xs text-neutral-300 leading-relaxed font-sans" dir="auto">
+                {isAiLoading && !aiSummary ? (
+                   <span className="animate-pulse">{language === 'fa' ? 'در حال تحلیل داده‌ها...' : 'Analyzing portfolio...'}</span>
+                ) : (
+                  <div className="markdown-body text-[11px] prose prose-invert prose-p:my-1 prose-ul:my-1 prose-a:text-[#DFBA44]">
+                     <Markdown>{aiSummary}</Markdown>
+                  </div>
+                )}
+              </div>
+            </div>
+          )}
+          {/* AI OVERVIEW END */}
+
           {results.length > 0 ? (
             <div className="space-y-1">
+              <div className={`text-[10px] uppercase font-bold tracking-widest px-2 py-1 mb-1 ${isDevilMode ? 'text-red-500/50' : 'text-[#DFBA44]/50'}`}>
+                {language === 'fa' ? 'نتایج مستقیم' : 'Direct Matches'}
+              </div>
               {results.map((result, idx) => (
                 <button
                   key={idx}
@@ -168,7 +245,7 @@ export default function GlobalSearchBar({
             </div>
           ) : (
             <div className="text-center py-6 text-neutral-500 text-xs">
-              {language === 'fa' ? 'نتیجه‌ای یافت نشد.' : 'No results found.'}
+              {language === 'fa' ? 'نتیجه‌ای برای عبارات دقیق یافت نشد.' : 'No direct matches found.'}
             </div>
           )}
         </div>
