@@ -1,0 +1,103 @@
+@import url('https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@300;400;500;600;700;900&family=JetBrains+Mono:wght@100;200;300;400;500;600;700;800&display=swap');
+@import "tailwindcss";
+
+@theme {
+  --font-sans: "Space Grotesk", ui-sans-serif, system-ui, sans-serif;
+  --font-mono: "JetBrains Mono", ui-monospace, SFMono-Regular, monospace;
+}
+
+@layer base {
+  body {
+    background-color: #030303;
+    color: #F3EFE0;
+    font-family: var(--font-sans);
+    overflow-x: hidden;
+  }
+}
+
+/* Gold neon glows and ambient reflections */
+.gold-glow-text {
+  text-shadow: 0 0 10px rgba(212, 175, 55, 0.4), 0 0 20px rgba(212, 175, 55, 0.2);
+}
+
+.gold-glow-border {
+  box-shadow: 0 0 15px rgba(212, 175, 55, 0.15);
+}
+
+.gold-glow-border-intense {
+  box-shadow: 0 0 25px rgba(212, 175, 55, 0.4);
+}
+
+/* Devil Crimson glows and ambient reflections */
+.red-glow-text {
+  text-shadow: 0 0 10px rgba(239, 68, 68, 0.45), 0 0 20px rgba(239, 68, 68, 0.25);
+}
+
+.red-glow-border {
+  box-shadow: 0 0 15px rgba(239, 68, 68, 0.18);
+}
+
+.red-glow-border-intense {
+  box-shadow: 0 0 25px rgba(239, 68, 68, 0.45);
+}
+
+/* Custom Scrollbars in Gold, Red and Slate */
+::-webkit-scrollbar {
+  width: 6px;
+  height: 6px;
+}
+
+::-webkit-scrollbar-track {
+  background: #080808;
+}
+
+::-webkit-scrollbar-thumb {
+  background: #C59B27;
+  border-radius: 4px;
+}
+
+::-webkit-scrollbar-thumb:hover {
+  background: #DFBA44;
+}
+
+/* Keyframes for Sacred Geometry Rotation & Pulsing */
+@keyframes rotate-slow {
+  0% { transform: rotate(0deg); }
+  100% { transform: rotate(360deg); }
+}
+
+@keyframes pulse-slow {
+  0%, 100% { opacity: 0.25; transform: scale(1); }
+  50% { opacity: 0.45; transform: scale(1.05); }
+}
+
+@keyframes grid-move {
+  0% { background-position: 0 0; }
+  100% { background-position: 40px 40px; }
+}
+
+.animate-rotate-slow {
+  animation: rotate-slow 40s linear infinite;
+}
+
+.animate-pulse-slow {
+  animation: pulse-slow 8s ease-in-out infinite;
+}
+
+.gold-dot-grid {
+  background-image: radial-gradient(rgba(212, 175, 55, 0.04) 1px, transparent 1px);
+  background-size: 24px 24px;
+}
+
+.red-dot-grid {
+  background-image: radial-gradient(rgba(239, 68, 68, 0.05) 1px, transparent 1px);
+  background-size: 24px 24px;
+}
+
+.sacred-grid {
+  background-image: 
+    linear-gradient(to right, rgba(212, 175, 55, 0.02) 1px, transparent 1px),
+    linear-gradient(to bottom, rgba(212, 175, 55, 0.02) 1px, transparent 1px);
+  background-size: 40px 40px;
+  animation: grid-move 20s linear infinite;
+}
