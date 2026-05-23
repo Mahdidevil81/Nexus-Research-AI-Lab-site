@@ -1,5 +1,6 @@
 import React, { useState } from 'react';
-import { BrainCircuit, Landmark, Globe, ExternalLink, ChevronRight, UserCheck } from 'lucide-react';
+import { BrainCircuit, Landmark, Globe, ExternalLink, ChevronRight, UserCheck, Share2 } from 'lucide-react';
+import { motion, AnimatePresence } from 'motion/react';
 
 interface PartnersGridCardProps {
   language: 'en' | 'fa';
@@ -8,6 +9,35 @@ interface PartnersGridCardProps {
 
 export default function PartnersGridCard({ language, isDevilMode }: PartnersGridCardProps) {
   const [activePartner, setActivePartner] = useState<string | null>(null);
+  const [copied, setCopied] = useState(false);
+
+  const handleShare = async () => {
+    const shareUrl = window.location.origin || 'https://nexus-research.site';
+    const text = language === 'fa' 
+      ? `بایگانی علمی و تحقیقاتی نکسوس ۳۶۹ - پیوند هوش مصنوعی ماتریکس و فرکانس‌های زمین: ${shareUrl}`
+      : `Nexus 369 Scientific Archive & Research - Bridging AI Matrix & Planetary Frequencies: ${shareUrl}`;
+
+    if (navigator.share) {
+      try {
+        await navigator.share({
+          title: 'Nexus 369',
+          text: text,
+          url: shareUrl,
+        });
+        return;
+      } catch (err) {
+        console.log('Share API error or cancelled', err);
+      }
+    }
+
+    try {
+      await navigator.clipboard.writeText(shareUrl);
+      setCopied(true);
+      setTimeout(() => setCopied(false), 2000);
+    } catch (err) {
+      console.error('Failed to copy to clipboard', err);
+    }
+  };
 
   const partners = [
     {
@@ -37,10 +67,38 @@ export default function PartnersGridCard({ language, isDevilMode }: PartnersGrid
       desc: language === 'fa' 
         ? 'پژوهشگر دانشگاه مندل. در آزمایشگاه نکسوس، وی عهده‌دار همسوسازی فناوری‌های دفترکل غیرمتمرکز نکسوس با شاخص‌های علمی معتبر اتحادیه اروپا (همچون Horizon Europe) و توسعه پروتکل‌های راستی‌آزمایی داده‌ها است.'
         : 'Mendel University scholar. Within Nexus AI Lab, he directs the European academic alliance networks, aligning our decentralized ledger technology with Horizon Europe scientific metrics and coordination initiatives.',
-      field: language === 'fa' ? 'پژوهش‌های آکادمیک، اتحادیه اروپا' : 'Academic Research, EU',
+      field: language === 'fa' ? 'پژوهش‌های آکامین، اتحادیه اروپا' : 'Academic Research, EU',
       icon: <Landmark className="w-5 h-5 md:w-6 md:h-6" />,
     }
   ];
+
+  // Motion variants for stagger
+  const expandContainerVariants: any = {
+    hidden: { opacity: 0, height: 0 },
+    show: {
+      opacity: 1,
+      height: 'auto',
+      transition: {
+        height: { duration: 0.3, ease: 'easeOut' },
+        opacity: { duration: 0.25, delay: 0.05 },
+        staggerChildren: 0.08,
+        delayChildren: 0.1
+      }
+    },
+    exit: {
+      opacity: 0,
+      height: 0,
+      transition: {
+        height: { duration: 0.2, ease: 'easeIn' },
+        opacity: { duration: 0.15 }
+      }
+    }
+  };
+
+  const expandItemVariants: any = {
+    hidden: { opacity: 0, y: 8 },
+    show: { opacity: 1, y: 0, transition: { duration: 0.2, ease: 'easeOut' } }
+  };
 
   return (
     <div className={`p-5 rounded-2xl border backdrop-blur-md transition-all duration-500 flex flex-col h-[610px] relative overflow-hidden ${
@@ -63,11 +121,36 @@ export default function PartnersGridCard({ language, isDevilMode }: PartnersGrid
             {language === 'fa' ? 'شرکای راهبردی نکسوس' : 'Nexus Strategic Partners'}
           </h3>
         </div>
-        <span className={`text-[9px] font-mono border px-2 py-0.5 rounded ${
-          isDevilMode ? 'border-red-500/30 text-red-400 bg-red-950/20' : 'border-[#DFBA44]/30 text-[#DFBA44] bg-[#DFBA44]/15'
-        }`}>
-          {language === 'fa' ? 'اتحاد جهانی ۳۶۹' : 'GLOBAL ALLIANCE 369'}
-        </span>
+        
+        <div className="flex items-center gap-2">
+          {/* Share Button with visual feedback */}
+          <button
+            onClick={(e) => {
+              e.stopPropagation();
+              handleShare();
+            }}
+            className={`p-1.5 rounded-lg border transition-all duration-300 flex items-center justify-center cursor-pointer select-none gap-1 ${
+              isDevilMode 
+                ? 'border-red-900/50 bg-[#150a0a] text-red-400 hover:text-red-300 hover:bg-red-950/40 hover:border-red-500/50 active:scale-95' 
+                : 'border-[#DFBA44]/30 bg-[#1c1a14]/60 text-[#DFBA44]/80 hover:text-[#DFBA44] hover:bg-[#DFBA44]/10 hover:border-[#DFBA44]/60 active:scale-95'
+            }`}
+            title={language === 'fa' ? 'اشتراک‌گذاری آدرس نکسوس' : 'Share Nexus Link'}
+          >
+            {copied ? (
+              <span className="text-[9px] font-mono font-bold tracking-tight px-1 text-emerald-400">
+                {language === 'fa' ? 'کپی شد!' : 'COPIED!'}
+              </span>
+            ) : (
+              <Share2 className="w-3.5 h-3.5" />
+            )}
+          </button>
+
+          <span className={`text-[9px] font-mono border px-2 py-0.5 rounded ${
+            isDevilMode ? 'border-red-550/30 text-red-400 bg-red-950/20' : 'border-[#DFBA44]/30 text-[#DFBA44] bg-[#DFBA44]/15'
+          }`}>
+            {language === 'fa' ? 'اتحاد جهانی ۳۶۹' : 'GLOBAL ALLIANCE 369'}
+          </span>
+        </div>
       </div>
 
       <p className="text-xs text-neutral-400 mb-4 leading-relaxed max-w-xl font-sans font-light">
@@ -76,7 +159,7 @@ export default function PartnersGridCard({ language, isDevilMode }: PartnersGrid
           : 'A highly integrated international network of leading scientists, strategists, and researchers across the EU and Asia collaborating on Nexus strategic objectives.'}
       </p>
 
-      {/* Main Partners Display */}
+      {/* Main Partners Display with Staggered Fade-in */}
       <div className="flex-1 overflow-y-auto space-y-3.5 pr-1 py-1 select-text">
         {partners.map((partner) => {
           const isSelected = activePartner === partner.id;
@@ -84,7 +167,7 @@ export default function PartnersGridCard({ language, isDevilMode }: PartnersGrid
             <div
               key={partner.id}
               onClick={() => setActivePartner(isSelected ? null : partner.id)}
-              className={`p-3.5 rounded-xl border transition-all duration-300 cursor-pointer relative overflow-hidden group ${
+              className={`p-3.5 rounded-xl border transition-all duration-500 cursor-pointer relative overflow-hidden group ${
                 isSelected 
                   ? (isDevilMode ? 'bg-[#1e1010]/80 border-red-500/50 shadow-[0_0_15px_rgba(239,68,68,0.15)]' : 'bg-[#151512]/80 border-[#DFBA44]/60 shadow-[0_0_15px_rgba(223,186,68,0.15)]')
                   : (isDevilMode ? 'bg-red-950/5 border-red-900/20 hover:border-red-500/30 hover:bg-red-950/10' : 'bg-white/5 border-white/5 hover:border-[#DFBA44]/30 hover:bg-white/10')
@@ -127,25 +210,40 @@ export default function PartnersGridCard({ language, isDevilMode }: PartnersGrid
                     }`} />
                   </div>
 
-                  {/* Descriptions block with transition height */}
-                  <div className={`transition-all duration-300 ease-in-out overflow-hidden ${
-                    isSelected ? 'max-h-40 opacity-100 mt-3 pt-3 border-t border-neutral-800' : 'max-h-0 opacity-0'
-                  }`}>
-                    <p className={`text-xs leading-relaxed text-justify ${
-                      isDevilMode ? 'text-red-100/70' : 'text-neutral-300/90'
-                    }`} dir={language === 'fa' ? 'rtl' : 'ltr'}>
-                      {partner.desc}
-                    </p>
-                    
-                    {/* Fake action/social credentials */}
-                    <div className="flex justify-between items-center mt-3 pt-2 text-[10px] font-mono text-neutral-500">
-                      <span>STATUS: SECURITY_AGREEMENT_SIGNED</span>
-                      <span className="flex items-center gap-1 text-white hover:text-white/80">
-                        {language === 'fa' ? 'مشاهده سند همکاری' : 'View Agreement'}
-                        <ExternalLink className="w-2.5 h-2.5" />
-                      </span>
-                    </div>
-                  </div>
+                  {/* Descriptions block with high-tech staggered elements */}
+                  <AnimatePresence initial={false}>
+                    {isSelected && (
+                      <motion.div
+                        variants={expandContainerVariants}
+                        initial="hidden"
+                        animate="show"
+                        exit="exit"
+                        className="overflow-hidden mt-3 pt-3 border-t border-neutral-800"
+                      >
+                        <motion.p
+                          variants={expandItemVariants}
+                          className={`text-xs leading-relaxed text-justify ${
+                            isDevilMode ? 'text-red-100/70' : 'text-neutral-300/90'
+                          }`}
+                          dir={language === 'fa' ? 'rtl' : 'ltr'}
+                        >
+                          {partner.desc}
+                        </motion.p>
+                        
+                        {/* Status elements staggered */}
+                        <motion.div
+                          variants={expandItemVariants}
+                          className="flex justify-between items-center mt-3 pt-2 text-[10px] font-mono text-neutral-500"
+                        >
+                          <span>STATUS: SECURITY_AGREEMENT_SIGNED</span>
+                          <span className="flex items-center gap-1 text-white hover:text-white/80">
+                            {language === 'fa' ? 'مشاهده سند همکاری' : 'View Agreement'}
+                            <ExternalLink className="w-2.5 h-2.5" />
+                          </span>
+                        </motion.div>
+                      </motion.div>
+                    )}
+                  </AnimatePresence>
                 </div>
               </div>
             </div>

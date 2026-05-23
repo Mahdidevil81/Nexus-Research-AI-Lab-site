@@ -44,6 +44,7 @@ import GlobalSearchBar from "./components/GlobalSearchBar";
 import ExpertCVCard from "./components/ExpertCVCard";
 import PartnersMegaMenu from "./components/PartnersMegaMenu";
 import PartnersGridCard from "./components/PartnersGridCard";
+import SentimentChartCard from "./components/SentimentChartCard";
 
 export default function App() {
   const [showLoadingScreen, setShowLoadingScreen] = useState(true);
@@ -64,7 +65,11 @@ export default function App() {
   
   // Custom video url state allowing users to dynamic update active video presentation
   const [videoUrl, setVideoUrl] = useState<string>(() => {
-    return localStorage.getItem('nexus_intro_video_url') || 'https://www.youtube.com/embed/Y-9f93mU5G4';
+    const saved = localStorage.getItem('nexus_intro_video_url');
+    if (saved && (saved.includes('Y-9f93mU5G4') || saved === '')) {
+      return 'https://www.youtube.com/embed/o12PYvSDDLM';
+    }
+    return saved || 'https://www.youtube.com/embed/o12PYvSDDLM';
   });
   const [isEditingVideo, setIsEditingVideo] = useState<boolean>(false);
   const [videoUrlInput, setVideoUrlInput] = useState<string>('');
@@ -862,7 +867,7 @@ export default function App() {
                     type="text"
                     value={videoUrlInput}
                     onChange={(e) => setVideoUrlInput(e.target.value)}
-                    placeholder="https://www.youtube.com/embed/Y-9f93mU5G4"
+                    placeholder="https://www.youtube.com/embed/o12PYvSDDLM"
                     className="flex-1 bg-black border border-neutral-700 rounded p-2 text-white outline-none focus:border-amber-400 select-all"
                   />
                   <button
@@ -910,6 +915,11 @@ export default function App() {
                 ? 'کدهای کیهانی تسلا، الگوهای فلوچارت مانیفست بقای انسان و نحوه هم‌راستایی فاز فرکانسی در ماتریکس دیجیتال نکسوس در این ویدیوی آموزشی به طور منسجم ارائه شده است.' 
                 : 'Showing physical frequency harmonics, human ontological survival blueprints, and organic digital matrices configured within the sovereign Nexus 369 architecture.'}
             </p>
+
+            {/* Simulated Viewer Sentiment Analysis & Engagement Chart */}
+            <div className="w-full max-w-4xl">
+              <SentimentChartCard language={language} isDevilMode={isDevilMode} />
+            </div>
           </div>
         </div>
       </section>
@@ -983,15 +993,6 @@ export default function App() {
                 className={`transition-colors flex items-center gap-1 ${isDevilMode ? "hover:text-red-500" : "hover:text-[#DFBA44]"}`}
               >
                 <span>LinkedIn</span>
-                <ExternalLink className="w-3 h-3" />
-              </a>
-              <a 
-                href={SOCIALS.researchgate} 
-                target="_blank" 
-                rel="noreferrer" 
-                className={`transition-colors flex items-center gap-1 ${isDevilMode ? "hover:text-red-500" : "hover:text-[#DFBA44]"}`}
-              >
-                <span>ResearchGate</span>
                 <ExternalLink className="w-3 h-3" />
               </a>
             </div>

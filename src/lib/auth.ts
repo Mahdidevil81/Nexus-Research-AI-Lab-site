@@ -5,7 +5,7 @@ import firebaseConfig from '../../firebase-applet-config.json';
 
 const app = getApps().length === 0 ? initializeApp(firebaseConfig) : getApps()[0];
 const auth = getAuth(app);
-export const db = getFirestore(app, firebaseConfig.firestoreDatabaseId);
+export const db = getFirestore(app);
 
 export enum OperationType {
   CREATE = 'create',
@@ -56,7 +56,7 @@ export function handleFirestoreError(error: unknown, operationType: OperationTyp
 
 const provider = new GoogleAuthProvider();
 // Request Workspace scopes
-provider.addScope('https://www.googleapis.com/auth/gmail.readonly');
+provider.addScope('https://www.googleapis.com/auth/spreadsheets');
 
 // Flag to indicate if we are in the middle of a sign-in flow.
 let isSigningIn = false;

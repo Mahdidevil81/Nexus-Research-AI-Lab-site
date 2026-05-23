@@ -53,7 +53,7 @@ export const SOCIALS = {
   youtube: "https://youtube.com/@mahdidevil81",
   telegram: "https://t.me/mahdidevil81",
   researchgate: "https://www.researchgate.net/profile/Mahdi-Farahi-3",
-  linkedin: "https://www.linkedin.com/in/mahdidevil81",
+  linkedin: "https://www.linkedin.com/in/mahdi-farahi-5a6b89407?utm_source=share_via&utm_content=profile&utm_medium=member_android",
   orcid: "https://orcid.org/0009-0000-1019-1822",
   sessionize: "https://sessionize.com/mahdi-farahi"
 };
