@@ -81,24 +81,52 @@ export default function SentimentChartCard({ language, isDevilMode }: SentimentC
     }
   };
 
-  const handleShareSentiment = () => {
+  const handleShareSentiment = async () => {
     const averageSentimentMsg = language === 'fa'
       ? `📈 شاخص صمیمیت کلی بینندگان نکسوس ۳۶۹ روی ۹۱.۴٪ تثبیت شده است!`
       : `📈 Nexus 369 Average Viewer Sentiment Index has stabilized at a peak of 91.4%!`;
     
-    // Copy to clipboard safely
-    try {
-      navigator.clipboard.writeText(averageSentimentMsg).catch(() => {});
-    } catch (err) {
-      console.warn("Clipboard access not available", err);
-    }
+    // Bulletproof Copy Sequence
+    const copySuccess = await (async () => {
+      try {
+        window.focus();
+        if (navigator.clipboard && navigator.clipboard.writeText) {
+          await navigator.clipboard.writeText(averageSentimentMsg);
+          return true;
+        }
+      } catch (err) {
+        console.warn("Modern clipboard write for sentiment failed, utilizing fallback...", err);
+      }
+      try {
+        const textArea = document.createElement("textarea");
+        textArea.value = averageSentimentMsg;
+        textArea.style.position = "fixed";
+        textArea.style.top = "0";
+        textArea.style.left = "0";
+        textArea.style.opacity = "0";
+        textArea.style.pointerEvents = "none";
+        document.body.appendChild(textArea);
+        textArea.focus();
+        textArea.select();
+        const successful = document.execCommand("copy");
+        document.body.removeChild(textArea);
+        return !!successful;
+      } catch (fallbackErr) {
+        console.error("Critical sentiment copy backup failure", fallbackErr);
+        return false;
+      }
+    })();
 
     // Set interactive visual Toast
     setToast({
       show: true,
-      msg: language === 'fa' 
-        ? 'شاخص صمیمیت (۹۱.۴٪) در حافظه کپی شد و آماده اشتراک گذاری است!' 
-        : 'Sentiment Index (91.4%) copied and is ready to share!'
+      msg: copySuccess
+        ? (language === 'fa' 
+            ? 'شاخص صمیمیت (۹۱.۴٪) در حافظه کپی شد و آماده اشتراک گذاری است!' 
+            : 'Sentiment Index (91.4%) copied and is ready to share!')
+        : (language === 'fa'
+            ? `شاخص کلی: ۹۱.۴٪`
+            : `Average index is 91.4%`)
     });
 
     // Dismiss after 3 seconds

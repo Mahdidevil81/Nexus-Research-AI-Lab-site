@@ -30,12 +30,48 @@ export default function PartnersGridCard({ language, isDevilMode }: PartnersGrid
       }
     }
 
-    try {
-      await navigator.clipboard.writeText(shareUrl);
+    // Bulletproof Copy Sequence
+    const copySuccess = await (async () => {
+      try {
+        window.focus();
+        if (navigator.clipboard && navigator.clipboard.writeText) {
+          await navigator.clipboard.writeText(shareUrl);
+          return true;
+        }
+      } catch (err) {
+        console.warn("Modern clipboard write failed, utilizing fallback...", err);
+      }
+      try {
+        const textArea = document.createElement("textarea");
+        textArea.value = shareUrl;
+        textArea.style.position = "fixed";
+        textArea.style.top = "0";
+        textArea.style.left = "0";
+        textArea.style.opacity = "0";
+        textArea.style.pointerEvents = "none";
+        document.body.appendChild(textArea);
+        textArea.focus();
+        textArea.select();
+        const successful = document.execCommand("copy");
+        document.body.removeChild(textArea);
+        return !!successful;
+      } catch (fallbackErr) {
+        console.error("Critical clipboard backup failure", fallbackErr);
+        return false;
+      }
+    })();
+
+    if (copySuccess) {
       setCopied(true);
       setTimeout(() => setCopied(false), 2000);
-    } catch (err) {
-      console.error('Failed to copy to clipboard', err);
+    } else {
+      // Direct user fallback prompt if completely locked down by sandbox environment
+      window.prompt(
+        language === 'fa' 
+          ? "کپی خودکار مسدود شد. آدرس را کپی کنید:" 
+          : "Auto-copy blocked. Copy this link manually:",
+        shareUrl
+      );
     }
   };
 

@@ -80,14 +80,7 @@ export default function App() {
   const [activeNav, setActiveNav] = useState<string>('home');
   
   // Interactive Chat State
-  const [messages, setMessages] = useState<Array<{ id: string; role: 'user' | 'assistant'; text: string; timestamp: string; feedback?: 'up' | 'down' }>>([
-    {
-      id: "initial",
-      role: 'assistant',
-      text: "سلام. من هسته هوشمند زنده Nexus 369 ARCHIVE هستم. چطور می‌توانم در مورد مهارت‌ها، سوابق مدیریتی و فنی، و پروژه‌های ۲ میلیون یورویی مهدی فراهی به شما اطلاعات بدهم؟\n\nWelcome to the Nexus 369 intelligence core. Ask me anything about Mahdi Farahi's Strategic AI Architecture, European PIC credentials, or FARM2FORK initiative.",
-      timestamp: "20:18Z"
-    }
-  ]);
+  const [messages, setMessages] = useState<Array<{ id: string; role: 'user' | 'assistant'; text: string; timestamp: string; feedback?: 'up' | 'down' }>>([]);
   const [inputText, setInputText] = useState("");
   const [isChatLoading, setIsChatLoading] = useState(false);
   const [quotaExhausted, setQuotaExhausted] = useState(false);
@@ -468,9 +461,9 @@ export default function App() {
         )}
       </AnimatePresence>
 
-      {/* 1. TOP BROWSER-LIKE INTERACTIVE UTILITY BAR (FROM THE SCREENSHOT) */}
+      {/* 1. INTERNATIONAL PORTAL HUB BROADCAST & STATUS INDICATOR BAR */}
       {showTopBar && (
-        <div className="w-full bg-[#18181C] border-b border-neutral-800/80 px-4 py-2.5 flex justify-between items-center relative z-50 transition-all text-xs font-sans tracking-tight">
+        <div className="w-full bg-[#111115] border-b border-neutral-800/80 px-4 py-2 flex justify-between items-center relative z-50 transition-all text-xs font-sans tracking-tight">
           {/* Left Element: Show Original Version Link */}
           <div className="flex items-center space-x-2 space-x-reverse">
             <button 
@@ -478,15 +471,18 @@ export default function App() {
                 setLanguage('en');
                 setIsDevilMode(false);
               }}
-              className="bg-[#24242A] hover:bg-neutral-800 text-white border border-neutral-750 px-3.5 py-1.5 rounded-xl font-medium cursor-pointer transition-all active:scale-95 text-[11px] md:text-xs flex items-center gap-1.5"
+              className="bg-[#1C1C22] hover:bg-[#2A2A35] text-white border border-neutral-800 px-3 py-1 rounded-xl font-medium cursor-pointer transition-all active:scale-95 text-[11px] md:text-xs flex items-center gap-1.5"
             >
               <ExternalLink className="w-3.5 h-3.5" />
               <span>{language === 'fa' ? 'نمایش نسخه اصلی' : 'Show Original Version'}</span>
             </button>
+            <span className="hidden md:inline-flex items-center gap-1 text-[10px] text-green-500 font-mono animate-pulse">
+              ● {language === 'fa' ? 'پروتکل امن نکسوس متصل است' : 'NEXUS SYSTEM INTEGRATED'}
+            </span>
           </div>
 
           {/* Center Element: Language Toggle with arrows */}
-          <div className="flex items-center justify-center space-x-2 md:space-x-3 bg-[#0F0F12] border border-neutral-800 p-1 rounded-xl text-xs">
+          <div className="flex items-center justify-center space-x-2 md:space-x-3 bg-black/40 border border-neutral-800 p-1 rounded-xl text-xs">
             <button 
               onClick={() => setLanguage('en')}
               className={`px-3 py-1 rounded-lg transition-all font-mono font-medium ${language === 'en' ? 'bg-[#2A2A35] text-[#DFBA44] font-bold' : 'text-neutral-400 hover:text-white'}`}
@@ -506,7 +502,7 @@ export default function App() {
           <button 
             type="button"
             onClick={() => setShowTopBar(false)}
-            className="text-neutral-400 hover:text-white transition-colors p-1.5 rounded-lg hover:bg-neutral-800/60 focus:outline-none cursor-pointer"
+            className="text-neutral-400 hover:text-white transition-colors p-1 rounded-lg hover:bg-neutral-850 focus:outline-none cursor-pointer"
             title="پنهان کردن نوار ابزار / Close panel"
           >
             ✕
@@ -514,11 +510,11 @@ export default function App() {
         </div>
       )}
 
-      {/* 2. DESIGN HORIZONTAL NAVIGATION BAR (FROM THE SCREENSHOT) */}
-      <nav className={`w-full relative z-40 transition-colors duration-500 border-b ${
+      {/* 2. DESIGN HORIZONTAL NAVIGATION BAR (STICKY HIGH-END PORTAL FORMAT) */}
+      <nav className={`w-full sticky top-0 z-40 transition-all duration-500 border-b backdrop-blur-xl shadow-lg ${
         isDevilMode 
-          ? "bg-[#181111]/90 border-red-950/40 text-red-100" 
-          : "bg-[#100D1A]/95 border-[#DFBA44]/15 text-[#F3EFE0]"
+          ? "bg-[#181111]/85 border-red-950/50 text-red-100" 
+          : "bg-[#100D1A]/85 border-[#DFBA44]/20 text-[#F3EFE0]"
       }`}>
         <div className="max-w-7xl mx-auto px-4 md:px-6 py-3 flex flex-wrap md:flex-nowrap items-center justify-between gap-4">
           <div className="flex items-center gap-2 md:gap-5 overflow-x-auto whitespace-nowrap scrollbar-none pr-1 pl-1 pb-1 md:pb-0">
@@ -924,25 +920,7 @@ export default function App() {
         </div>
       </section>
 
-      {/* 6. MOCK BROWSER NAVIGATION BAR (MOCK FROM MOBILE BROWSER IN SCREENSHOT) */}
-      <div className="max-w-4xl mx-auto px-4 py-6 relative z-10 animate-fade-in">
-        <div className="w-full bg-[#18181A] border border-neutral-800/80 px-4 py-3 rounded-2xl flex items-center justify-between text-xs text-neutral-400 font-mono select-none">
-          <div className="flex items-center space-x-3 space-x-reverse">
-            <span className="text-lg">☰</span>
-            <span className="text-lg">❐</span>
-          </div>
 
-          <div className="flex items-center space-x-1.5 text-white bg-black/40 border border-neutral-900 px-4 py-1.5 rounded-full select-all cursor-text text-[11px] md:text-xs">
-            <span className="text-green-500">🔒</span>
-            <span className="font-sans font-light tracking-wide text-neutral-200">nexus369.eu // mahdidevil.eu</span>
-          </div>
-
-          <div className="flex items-center space-x-3 space-x-reverse">
-            <span className="text-neutral-500">➕</span>
-            <span className="text-[#DFBA44] hover:text-[#DFBA44]/80 cursor-pointer text-lg" onClick={() => handleSendMessage(undefined, "Show me quantum vortex proof documents in English.")}>↻</span>
-          </div>
-        </div>
-      </div>
 
       {/* 7. FOOTER CONTACTS & SOCIALS AT THE VERY BOTTOM */}
       <footer 
